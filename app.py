@@ -59,7 +59,16 @@ uploaded_file = st.file_uploader(
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
-    st.image(image, caption="Gambar Input", use_container_width=True)
+
+    # ===== TAMPILAN GAMBAR DIPERKECIL & RAPIH =====
+    col_img, col_result = st.columns([1, 1])
+
+    with col_img:
+        st.image(
+            image,
+            caption="Gambar Input",
+            width=380   # ⬅️ INI YANG MEMPERKECIL GAMBAR
+        )
 
     x = preprocess_image(image)
 
@@ -72,22 +81,29 @@ if uploaded_file is not None:
     idx_mn = int(np.argmax(pred_mn))
     idx_ef = int(np.argmax(pred_ef))
 
-    col1, col2 = st.columns(2)
+    with col_result:
+        st.subheader("Hasil Prediksi")
 
-    with col1:
-        st.subheader("MobileNetV2 (Fixed Feature)")
+        st.markdown("### MobileNetV2 (Fixed Feature)")
         st.write(f"**Prediksi:** {CLASS_NAMES[idx_mn]}")
         st.write(f"**Confidence:** {pred_mn[idx_mn]*100:.2f}%")
 
+        st.markdown("### EfficientNetB0 (Fixed Feature)")
+        st.write(f"**Prediksi:** {CLASS_NAMES[idx_ef]}")
+        st.write(f"**Confidence:** {pred_ef[idx_ef]*100:.2f}%")
+
+    st.markdown("---")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("Distribusi Probabilitas MobileNetV2")
         st.bar_chart(
             {CLASS_NAMES[i]: float(pred_mn[i]) for i in range(len(CLASS_NAMES))}
         )
 
     with col2:
-        st.subheader("EfficientNetB0 (Fixed Feature)")
-        st.write(f"**Prediksi:** {CLASS_NAMES[idx_ef]}")
-        st.write(f"**Confidence:** {pred_ef[idx_ef]*100:.2f}%")
-
+        st.subheader("Distribusi Probabilitas EfficientNetB0")
         st.bar_chart(
             {CLASS_NAMES[i]: float(pred_ef[i]) for i in range(len(CLASS_NAMES))}
         )
