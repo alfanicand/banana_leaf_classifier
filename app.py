@@ -30,6 +30,9 @@ model_mn, model_ef = load_models()
 
 # =============================
 # Preprocessing (SESUAI SKRIPSI)
+# - resize 224x224
+# - TANPA normalisasi manual
+# - preprocess_input ADA DI DALAM MODEL
 # =============================
 def preprocess_image(img: Image.Image):
     img = img.convert("RGB")
@@ -44,8 +47,7 @@ def preprocess_image(img: Image.Image):
 st.title("Perbandingan MobileNetV2 vs EfficientNetB0 (Fixed Feature)")
 st.write(
     "Aplikasi ini membandingkan hasil klasifikasi penyakit daun pisang "
-    "menggunakan **MobileNetV2 dan EfficientNetB0 pada skenario Fixed Feature (FE)** "
-    "dengan citra input yang sama."
+    "menggunakan **MobileNetV2 dan EfficientNetB0 pada skenario Fixed Feature** "
 )
 
 uploaded_file = st.file_uploader(
@@ -56,13 +58,16 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
 
-    # ===== LAYOUT AMAN: GAMBAR DI ATAS, HASIL DI BAWAH =====
+    # ===== GAMBAR DI TENGAH (TIDAK MELEBAR / TIDAK MEMANJANG) =====
     st.subheader("Gambar Input")
-    st.image(
-        image,
-        width=420,        # ukuran aman
-        caption="Citra daun pisang"
-    )
+
+    col_left, col_center, col_right = st.columns([1, 2, 1])
+    with col_center:
+        st.image(
+            image,
+            use_container_width=True,
+            caption="Citra daun pisang"
+        )
 
     x = preprocess_image(image)
 
