@@ -7,57 +7,42 @@ from PIL import Image
 # Config
 # =============================
 st.set_page_config(
-    page_title="Klasifikasi Penyakit Daun Pisang",
+    page_title="Perbandingan Model Penyakit Daun Pisang",
     layout="centered"
 )
 
 CLASS_NAMES = ['cordana', 'healthy', 'pestalotiopsis', 'sigatoka']
-CONF_THRESHOLD = 0.60  # 60%
+CONF_THRESHOLD = 0.60  # 70%
 
 # =============================
-# Load models
+# Load all models
 # =============================
 @st.cache_resource
 def load_models():
-    return {
+    models = {
         "Fixed Feature": {
-            "MobileNetV2": tf.keras.models.load_model(
-                "mobilenetv2_fixedfeature.keras", compile=False
-            ),
-            "EfficientNetB0": tf.keras.models.load_model(
-                "efficientnetb0_fixedfeature.keras", compile=False
-            ),
+            "MobileNetV2": tf.keras.models.load_model("mobilenetv2_fixedfeature.keras", compile=False),
+            "EfficientNetB0": tf.keras.models.load_model("efficientnetb0_fixedfeature.keras", compile=False)
         },
         "FT10": {
-            "MobileNetV2": tf.keras.models.load_model(
-                "mobilenetv2_ft10.keras", compile=False
-            ),
-            "EfficientNetB0": tf.keras.models.load_model(
-                "efficientnetb0_ft10.keras", compile=False
-            ),
+            "MobileNetV2": tf.keras.models.load_model("mobilenetv2_ft10.keras", compile=False),
+            "EfficientNetB0": tf.keras.models.load_model("efficientnetb0_ft10.keras", compile=False)
         },
         "FT20": {
-            "MobileNetV2": tf.keras.models.load_model(
-                "mobilenetv2_ft20.keras", compile=False
-            ),
-            "EfficientNetB0": tf.keras.models.load_model(
-                "efficientnetb0_ft20.keras", compile=False
-            ),
+            "MobileNetV2": tf.keras.models.load_model("mobilenetv2_ft20.keras", compile=False),
+            "EfficientNetB0": tf.keras.models.load_model("efficientnetb0_ft20.keras", compile=False)
         },
         "FT30": {
-            "MobileNetV2": tf.keras.models.load_model(
-                "mobilenetv2_ft30.keras", compile=False
-            ),
-            "EfficientNetB0": tf.keras.models.load_model(
-                "efficientnetb0_ft30.keras", compile=False
-            ),
-        },
+            "MobileNetV2": tf.keras.models.load_model("mobilenetv2_ft30.keras", compile=False),
+            "EfficientNetB0": tf.keras.models.load_model("efficientnetb0_ft30.keras", compile=False)
+        }
     }
+    return models
 
 MODELS = load_models()
 
 # =============================
-# Preprocessing (sesuai skripsi)
+# Preprocessing (SESUAI SKRIPSI)
 # =============================
 def preprocess_image(img: Image.Image):
     img = img.convert("RGB")
@@ -66,21 +51,17 @@ def preprocess_image(img: Image.Image):
     img = np.expand_dims(img, axis=0)
     return img
 
-def validate_prediction(pred, threshold):
-    max_conf = float(np.max(pred))
-    return max_conf >= threshold, max_conf
-
 # =============================
 # UI
 # =============================
 st.title("Klasifikasi Penyakit Daun Pisang")
 st.write(
-    "Aplikasi ini menampilkan hasil klasifikasi penyakit daun pisang "
-    "menggunakan **MobileNetV2 dan EfficientNetB0** "
-    "dengan skenario **Fixed Feature dan Fine-Tuning**."
+    "Sistem ini membandingkan hasil klasifikasi penyakit daun pisang "
+    "menggunakan MobileNetV2 dan EfficientNetB0 pada berbagai skenario pelatihan."
 )
 
-scenario = st.selectbox(
+# ===== Model selector =====
+variant = st.selectbox(
     "Pilih skenario model",
     ["Fixed Feature", "FT10", "FT20", "FT30"]
 )
@@ -93,67 +74,61 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
 
-    # ===== TAMPILAN GAMBAR DI TENGAH =====
     st.subheader("Gambar Input")
     col_l, col_c, col_r = st.columns([1, 2, 1])
     with col_c:
-        st.image(image, caption="Citra input", use_container_width=True)
+        st.image(image, use_container_width=True)
 
     x = preprocess_image(image)
 
-    st.markdown("---")
-    st.subheader("Hasil Prediksi")
+    # =============================
+    # Prediction
+    # =============================
+    model_mn = MODELS[variant]["MobileNetV2"]
+    model_ef = MODELS[variant]["EfficientNetB0"]
 
-    col1, col2 = st.columns(2)
+    pred_mn = model_mn.predict(x, verbose=0)[0]
+    pred_ef = model_ef.predict(x, verbose=0)[0]
+
+    conf_mn = float(np.max(pred_mn))
+    conf_ef = float(np.max(pred_ef))
+
+    idx_mn = int(np.argmax(pred_mn))
+    idx_ef = int(np.argmax(pred_ef))
 
     # =============================
-    # MobileNetV2
+    # CONFIDENCE GATE
     # =============================
-    with col1:
-        st.markdown(f"### MobileNetV2 ({scenario})")
-        model_mn = MODELS[scenario]["MobileNetV2"]
-        pred_mn = model_mn.predict(x, verbose=0)[0]
+    if conf_mn < CONF_THRESHOLD or conf_ef < CONF_THRESHOLD:
+        st.markdown("---")
+        st.markdown(
+            "<h4 style='text-align:center; color:red;'>"
+            "Silakan upload ulang gambar daun pisang"
+            "</h4>",
+            unsafe_allow_html=True
+        )
+        st.caption(
+            "Gambar mungkin bukan daun pisang"
+            "hasil prediksi tidak ditampilkan."
+        )
+    else:
+        st.markdown("---")
+        st.subheader(f"Hasil Prediksi ({variant})")
 
-        valid_mn, conf_mn = validate_prediction(pred_mn, CONF_THRESHOLD)
+        col1, col2 = st.columns(2)
 
-        if not valid_mn:
-            st.warning(
-                "⚠️ **Confidence prediksi rendah.**\n\n"
-                "Gambar kemungkinan **bukan daun pisang** "
-                "atau objek tidak terlihat jelas.\n\n"
-                "**Silakan upload ulang gambar daun pisang.**"
-            )
-        else:
-            idx = int(np.argmax(pred_mn))
-            st.write(f"**Prediksi:** {CLASS_NAMES[idx]}")
+        with col1:
+            st.markdown("### MobileNetV2")
+            st.write(f"**Prediksi:** {CLASS_NAMES[idx_mn]}")
             st.write(f"**Confidence:** {conf_mn*100:.2f}%")
-
             st.bar_chart(
                 {CLASS_NAMES[i]: float(pred_mn[i]) for i in range(len(CLASS_NAMES))}
             )
 
-    # =============================
-    # EfficientNetB0
-    # =============================
-    with col2:
-        st.markdown(f"### EfficientNetB0 ({scenario})")
-        model_ef = MODELS[scenario]["EfficientNetB0"]
-        pred_ef = model_ef.predict(x, verbose=0)[0]
-
-        valid_ef, conf_ef = validate_prediction(pred_ef, CONF_THRESHOLD)
-
-        if not valid_ef:
-            st.warning(
-                "⚠️ **Confidence prediksi rendah.**\n\n"
-                "Gambar kemungkinan **bukan daun pisang** "
-                "atau kualitas citra tidak sesuai.\n\n"
-                "**Silakan upload ulang gambar daun pisang.**"
-            )
-        else:
-            idx = int(np.argmax(pred_ef))
-            st.write(f"**Prediksi:** {CLASS_NAMES[idx]}")
+        with col2:
+            st.markdown("### EfficientNetB0")
+            st.write(f"**Prediksi:** {CLASS_NAMES[idx_ef]}")
             st.write(f"**Confidence:** {conf_ef*100:.2f}%")
-
             st.bar_chart(
                 {CLASS_NAMES[i]: float(pred_ef[i]) for i in range(len(CLASS_NAMES))}
             )
