@@ -12,7 +12,7 @@ st.set_page_config(
 )
 
 CLASS_NAMES = ['cordana', 'healthy', 'pestalotiopsis', 'sigatoka']
-CONF_THRESHOLD = 0.60  # 70%
+CONF_THRESHOLD = 0.50  # 70%
 
 # =============================
 # Load all models
@@ -132,3 +132,4 @@ if uploaded_file is not None:
             st.bar_chart(
                 {CLASS_NAMES[i]: float(pred_ef[i]) for i in range(len(CLASS_NAMES))}
             )
+
