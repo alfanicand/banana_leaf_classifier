@@ -7,32 +7,59 @@ from PIL import Image
 # Config
 # =============================
 st.set_page_config(
-    page_title="Perbandingan Model Penyakit Daun Pisang",
+    page_title="Klasifikasi Penyakit Daun Pisang",
     layout="centered"
 )
 
 CLASS_NAMES = ['cordana', 'healthy', 'pestalotiopsis', 'sigatoka']
+CONF_THRESHOLD = 0.60   # threshold confidence (60%)
 
 # =============================
-# Load models (Fixed Feature)
+# Load models
 # =============================
 @st.cache_resource
 def load_models():
-    model_mobilenet = tf.keras.models.load_model(
-        "mobilenetv2_fixedfeature.keras", compile=False
-    )
-    model_efficientnet = tf.keras.models.load_model(
-        "efficientnetb0_fixedfeature.keras", compile=False
-    )
-    return model_mobilenet, model_efficientnet
+    models = {
+        "Fixed Feature": {
+            "MobileNetV2": tf.keras.models.load_model(
+                "mobilenetv2_fixedfeature.keras", compile=False
+            ),
+            "EfficientNetB0": tf.keras.models.load_model(
+                "efficientnetb0_fixedfeature.keras", compile=False
+            ),
+        },
+        "Fine-Tuning FT10": {
+            "MobileNetV2": tf.keras.models.load_model(
+                "mobilenetv2_ft10.keras", compile=False
+            ),
+            "EfficientNetB0": tf.keras.models.load_model(
+                "efficientnetb0_ft10.keras", compile=False
+            ),
+        },
+        "Fine-Tuning FT20": {
+            "MobileNetV2": tf.keras.models.load_model(
+                "mobilenetv2_ft20.keras", compile=False
+            ),
+            "EfficientNetB0": tf.keras.models.load_model(
+                "efficientnetb0_ft20.keras", compile=False
+            ),
+        },
+        "Fine-Tuning FT30": {
+            "MobileNetV2": tf.keras.models.load_model(
+                "mobilenetv2_ft30.keras", compile=False
+            ),
+            "EfficientNetB0": tf.keras.models.load_model(
+                "efficientnetb0_ft30.keras", compile=False
+            ),
+        },
+    }
+    return models
 
-model_mn, model_ef = load_models()
+
+MODELS = load_models()
 
 # =============================
 # Preprocessing (SESUAI SKRIPSI)
-# - resize 224x224
-# - TANPA normalisasi manual
-# - preprocess_input ADA DI DALAM MODEL
 # =============================
 def preprocess_image(img: Image.Image):
     img = img.convert("RGB")
@@ -44,10 +71,16 @@ def preprocess_image(img: Image.Image):
 # =============================
 # UI
 # =============================
-st.title("Perbandingan MobileNetV2 vs EfficientNetB0 (Fixed Feature)")
+st.title("Klasifikasi Penyakit Daun Pisang")
 st.write(
-    "Aplikasi ini membandingkan hasil klasifikasi penyakit daun pisang "
-    "menggunakan **MobileNetV2 dan EfficientNetB0 pada skenario Fixed Feature** "
+    "Aplikasi ini melakukan klasifikasi penyakit daun pisang menggunakan "
+    "**MobileNetV2 dan EfficientNetB0** dengan skenario **Fixed Feature** dan **Fine-Tuning**."
+)
+
+# ===== Dropdown skenario =====
+scenario = st.selectbox(
+    "Pilih skenario model",
+    options=list(MODELS.keys())
 )
 
 uploaded_file = st.file_uploader(
@@ -58,46 +91,61 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
 
-    # ===== GAMBAR DI TENGAH (TIDAK MELEBAR / TIDAK MEMANJANG) =====
     st.subheader("Gambar Input")
-
-    col_left, col_center, col_right = st.columns([1, 2, 1])
-    with col_center:
-        st.image(
-            image,
-            use_container_width=True,
-            caption="Citra daun pisang"
-        )
+    col_l, col_c, col_r = st.columns([1, 2, 1])
+    with col_c:
+        st.image(image, caption="Citra input", use_container_width=True)
 
     x = preprocess_image(image)
-
-    # =============================
-    # Prediction
-    # =============================
-    pred_mn = model_mn.predict(x, verbose=0)[0]
-    pred_ef = model_ef.predict(x, verbose=0)[0]
-
-    idx_mn = int(np.argmax(pred_mn))
-    idx_ef = int(np.argmax(pred_ef))
 
     st.markdown("---")
     st.subheader("Hasil Prediksi")
 
     col1, col2 = st.columns(2)
 
+    # =============================
+    # MobileNetV2
+    # =============================
     with col1:
-        st.markdown("### MobileNetV2 (Fixed Feature)")
+        st.markdown(f"### MobileNetV2 ({scenario})")
+        model_mn = MODELS[scenario]["MobileNetV2"]
+        pred_mn = model_mn.predict(x, verbose=0)[0]
+
+        idx_mn = int(np.argmax(pred_mn))
+        conf_mn = float(pred_mn[idx_mn])
+
         st.write(f"**Prediksi:** {CLASS_NAMES[idx_mn]}")
-        st.write(f"**Confidence:** {pred_mn[idx_mn]*100:.2f}%")
+        st.write(f"**Confidence:** {conf_mn*100:.2f}%")
+
+        if conf_mn < CONF_THRESHOLD:
+            st.warning(
+                "⚠️ Confidence rendah. "
+                "Gambar kemungkinan **bukan daun pisang** atau kualitas citra kurang baik."
+            )
 
         st.bar_chart(
             {CLASS_NAMES[i]: float(pred_mn[i]) for i in range(len(CLASS_NAMES))}
         )
 
+    # =============================
+    # EfficientNetB0
+    # =============================
     with col2:
-        st.markdown("### EfficientNetB0 (Fixed Feature)")
+        st.markdown(f"### EfficientNetB0 ({scenario})")
+        model_ef = MODELS[scenario]["EfficientNetB0"]
+        pred_ef = model_ef.predict(x, verbose=0)[0]
+
+        idx_ef = int(np.argmax(pred_ef))
+        conf_ef = float(pred_ef[idx_ef])
+
         st.write(f"**Prediksi:** {CLASS_NAMES[idx_ef]}")
-        st.write(f"**Confidence:** {pred_ef[idx_ef]*100:.2f}%")
+        st.write(f"**Confidence:** {conf_ef*100:.2f}%")
+
+        if conf_ef < CONF_THRESHOLD:
+            st.warning(
+                "⚠️ Confidence rendah. "
+                "Gambar kemungkinan **bukan daun pisang** atau kualitas citra kurang baik."
+            )
 
         st.bar_chart(
             {CLASS_NAMES[i]: float(pred_ef[i]) for i in range(len(CLASS_NAMES))}
