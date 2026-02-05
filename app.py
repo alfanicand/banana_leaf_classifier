@@ -109,7 +109,6 @@ if uploaded_file is not None:
         )
         st.caption(
             "Gambar mungkin bukan daun pisang"
-            "hasil prediksi tidak ditampilkan."
         )
     else:
         st.markdown("---")
@@ -132,4 +131,5 @@ if uploaded_file is not None:
             st.bar_chart(
                 {CLASS_NAMES[i]: float(pred_ef[i]) for i in range(len(CLASS_NAMES))}
             )
+
 
