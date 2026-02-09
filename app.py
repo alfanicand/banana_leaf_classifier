@@ -12,7 +12,14 @@ st.set_page_config(
 )
 
 CLASS_NAMES = ['cordana', 'healthy', 'pestalotiopsis', 'sigatoka']
-CONF_THRESHOLD = 0.50  # 70%
+
+CONF_THRESHOLDS = {
+    "Fixed Feature": 0.50,
+    "FT10": 0.55,
+    "FT20": 0.50,
+    "FT30": 0.58
+}
+
 
 # =============================
 # Load all models
@@ -96,10 +103,12 @@ if uploaded_file is not None:
     idx_mn = int(np.argmax(pred_mn))
     idx_ef = int(np.argmax(pred_ef))
 
+    threshold = CONF_THRESHOLDS[variant]
+    
     # =============================
     # CONFIDENCE GATE
     # =============================
-    if conf_mn < CONF_THRESHOLD or conf_ef < CONF_THRESHOLD:
+    if conf_mn < threshold or conf_ef < threshold:
         st.markdown("---")
         st.markdown(
             "<h4 style='text-align:center; color:red;'>"
@@ -131,5 +140,6 @@ if uploaded_file is not None:
             st.bar_chart(
                 {CLASS_NAMES[i]: float(pred_ef[i]) for i in range(len(CLASS_NAMES))}
             )
+
 
 
