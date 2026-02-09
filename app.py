@@ -15,9 +15,9 @@ CLASS_NAMES = ['cordana', 'healthy', 'pestalotiopsis', 'sigatoka']
 
 CONF_THRESHOLDS = {
     "Fixed Feature": 0.50,
-    "FT10": 0.55,
+    "FT10": 0.50,
     "FT20": 0.50,
-    "FT30": 0.57
+    "FT30": 0.50
 }
 
 
@@ -140,6 +140,7 @@ if uploaded_file is not None:
             st.bar_chart(
                 {CLASS_NAMES[i]: float(pred_ef[i]) for i in range(len(CLASS_NAMES))}
             )
+
 
 
 
