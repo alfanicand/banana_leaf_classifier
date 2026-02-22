@@ -75,11 +75,11 @@ with st.expander("🟤 Cordana"):
 
 with st.expander("🟢 Healthy"):
     st.write("Daun dalam kondisi sehat tanpa gejala penyakit.")
-    st.write("Penanganan: Lakukan perawatan rutin dan pemantauan berkala.")
+    st.write("Penanganan: Pemeliharaan rutin melalui pemupukan seimbang, pengaturan jarak tanam, serta pemantauan berkala untuk menjaga kondisi tanaman tetap sehat.")
 
 with st.expander("🟠 Pestalotiopsis"):
     st.write("Bercak tidak beraturan berwarna coklat dengan tepi lebih gelap.")
-    st.write("Penanganan: Sanitasi kebun dan pengurangan kelembaban berlebih.")
+    st.write("Penanganan: Pemangkasan dan pemusnahan daun terinfeksi untuk mencegah penyebaran spora, aplikasi fungisida berbahan aktif difenokonazol atau azoksistrobin, serta pemupukan tinggi kalium dan pengaturan jarak tanam untuk mengurangi kelembapan.")
 
 with st.expander("🟡 Sigatoka"):
     st.write("Bercak kecil memanjang berwarna kuning hingga coklat.")
@@ -158,6 +158,7 @@ if uploaded_file is not None:
             st.bar_chart(
                 {CLASS_NAMES[i]: float(pred_ef[i]) for i in range(len(CLASS_NAMES))}
             )
+
 
 
 
