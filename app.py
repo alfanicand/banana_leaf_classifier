@@ -83,7 +83,7 @@ with st.expander("🟠 Pestalotiopsis"):
 
 with st.expander("🟡 Sigatoka"):
     st.write("Bercak kecil memanjang berwarna kuning hingga coklat.")
-    st.write("Penanganan: Pemangkasan daun terinfeksi dan penyemprotan fungisida.")
+    st.write("Penanganan: Pemupukan untuk menjaga kesuburan tanah, pemusnahan daun terinfeksi, dan aplikasi fungisida berbahan aktif mankozeb atau propineb.")
 
 # ===== Model selector =====
 variant = st.selectbox(
@@ -158,6 +158,7 @@ if uploaded_file is not None:
             st.bar_chart(
                 {CLASS_NAMES[i]: float(pred_ef[i]) for i in range(len(CLASS_NAMES))}
             )
+
 
 
 
