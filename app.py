@@ -66,6 +66,24 @@ st.write(
     "Sistem ini membandingkan hasil klasifikasi penyakit daun pisang "
     "menggunakan MobileNetV2 dan EfficientNetB0 pada berbagai skenario pelatihan."
 )
+st.markdown("---")
+st.subheader("Informasi Kelas Penyakit")
+
+with st.expander("🟤 Cordana"):
+    st.write("Bercak coklat hingga keabu-abuan pada permukaan daun.")
+    st.write("Penanganan: Pemangkasan daun terinfeksi dan penggunaan fungisida sesuai anjuran.")
+
+with st.expander("🟢 Healthy"):
+    st.write("Daun dalam kondisi sehat tanpa gejala penyakit.")
+    st.write("Penanganan: Lakukan perawatan rutin dan pemantauan berkala.")
+
+with st.expander("🟠 Pestalotiopsis"):
+    st.write("Bercak tidak beraturan berwarna coklat dengan tepi lebih gelap.")
+    st.write("Penanganan: Sanitasi kebun dan pengurangan kelembaban berlebih.")
+
+with st.expander("🟡 Sigatoka"):
+    st.write("Bercak kecil memanjang berwarna kuning hingga coklat.")
+    st.write("Penanganan: Pemangkasan daun terinfeksi dan penyemprotan fungisida.")
 
 # ===== Model selector =====
 variant = st.selectbox(
@@ -140,6 +158,7 @@ if uploaded_file is not None:
             st.bar_chart(
                 {CLASS_NAMES[i]: float(pred_ef[i]) for i in range(len(CLASS_NAMES))}
             )
+
 
 
 
