@@ -71,7 +71,7 @@ st.subheader("Informasi Kelas Penyakit")
 
 with st.expander("🟤 Cordana"):
     st.write("Bercak coklat hingga keabu-abuan pada permukaan daun.")
-    st.write("Penanganan: Pemangkasan daun terinfeksi dan penggunaan fungisida sesuai anjuran.")
+    st.write("Penanganan: Mengatur kelembaban kebun dengan jarak tanam yang tidak terlalu rapat dan menghindari naungan berlebih, serta penggunaan fungisida berbahan aktif mankozeb atau propineb setelah pengamatan rutin.")
 
 with st.expander("🟢 Healthy"):
     st.write("Daun dalam kondisi sehat tanpa gejala penyakit.")
@@ -158,6 +158,7 @@ if uploaded_file is not None:
             st.bar_chart(
                 {CLASS_NAMES[i]: float(pred_ef[i]) for i in range(len(CLASS_NAMES))}
             )
+
 
 
 
