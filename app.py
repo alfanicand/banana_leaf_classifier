@@ -25,28 +25,41 @@ CONF_THRESHOLDS = {
 # Load all models
 # =============================
 @st.cache_resource
-def load_models():
-    models = {
+def load_model(variant):
+
+    model_paths = {
         "Fixed Feature": {
-            "MobileNetV2": tf.keras.models.load_model("mobilenetv2_fixedfeature.keras", compile=False),
-            "EfficientNetB0": tf.keras.models.load_model("efficientnetb0_fixedfeature.keras", compile=False)
+            "MobileNetV2": "mobilenetv2_fixedfeature.keras",
+            "EfficientNetB0": "efficientnetb0_fixedfeature.keras"
         },
         "FT10": {
-            "MobileNetV2": tf.keras.models.load_model("mobilenetv2_ft10.keras", compile=False),
-            "EfficientNetB0": tf.keras.models.load_model("efficientnetb0_ft10.keras", compile=False)
+            "MobileNetV2": "mobilenetv2_ft10.keras",
+            "EfficientNetB0": "efficientnetb0_ft10.keras"
         },
         "FT20": {
-            "MobileNetV2": tf.keras.models.load_model("mobilenetv2_ft20.keras", compile=False),
-            "EfficientNetB0": tf.keras.models.load_model("efficientnetb0_ft20.keras", compile=False)
+            "MobileNetV2": "mobilenetv2_ft20.keras",
+            "EfficientNetB0": "efficientnetb0_ft20.keras"
         },
         "FT30": {
-            "MobileNetV2": tf.keras.models.load_model("mobilenetv2_ft30.keras", compile=False),
-            "EfficientNetB0": tf.keras.models.load_model("efficientnetb0_ft30.keras", compile=False)
+            "MobileNetV2": "mobilenetv2_ft30.keras",
+            "EfficientNetB0": "efficientnetb0_ft30.keras"
         }
     }
-    return models
 
-MODELS = load_models()
+
+    models = {
+        "MobileNetV2": tf.keras.models.load_model(
+            model_paths[variant]["MobileNetV2"],
+            compile=False
+        ),
+
+        "EfficientNetB0": tf.keras.models.load_model(
+            model_paths[variant]["EfficientNetB0"],
+            compile=False
+        )
+    }
+
+    return models
 
 # =============================
 # Preprocessing (SESUAI SKRIPSI)
@@ -109,8 +122,10 @@ if uploaded_file is not None:
     # =============================
     # Prediction
     # =============================
-    model_mn = MODELS[variant]["MobileNetV2"]
-    model_ef = MODELS[variant]["EfficientNetB0"]
+    MODELS = load_model(variant)
+
+    model_mn = MODELS["MobileNetV2"]
+    model_ef = MODELS["EfficientNetB0"]
 
     pred_mn = model_mn.predict(x, verbose=0)[0]
     pred_ef = model_ef.predict(x, verbose=0)[0]
